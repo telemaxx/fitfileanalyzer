@@ -129,7 +129,7 @@ def main():
         Dprint('creating progressbar')
 
     Iprint('please be patient, i am parsing. This can take a minute')
-    file_count = skipped_count = renamed_count = simulated_count = skipped_defective_count = 0
+    file_count = skipped_count = analyzed_count = simulated_count = skipped_defective_count = 0
     for file in filelist:
         Dprint('processing %s' % (file))
         Dprint('start datafitprocessor')
@@ -149,8 +149,8 @@ def main():
             continue
         #Dprint('rename arguments: %s , %s , %d' % (fitfile, file, file_count))
         analyzestatus = analyze_fitfile(fitfile, file, file_count)
-        if   analyzestatus == 'renamed':
-            renamed_count += 1
+        if   analyzestatus == 'done':
+            analyzed_count += 1
         elif analyzestatus == 'simulated_renaming':
             simulated_count +=1
         elif analyzestatus == 'skipped':
@@ -160,14 +160,11 @@ def main():
         file_count += 1
     difftime = time.time() - starttime
     Iprint('finished processing %d file(s) in %d seconds' % (file_count, difftime))
-    summary = 'renamed: %d, simulated: %d, skipped existing: %d, skipped defective: %d' % (renamed_count, simulated_count, skipped_count, skipped_defective_count)
+    summary = 'analyzed: %d, skipped defective: %d' % (analyzed_count, skipped_defective_count)
     Iprint(summary)
     if ROA:
         droid.dialogDismiss()
         title='I have processed %d File(s) in %d seconds' % (file_count, difftime)
-        #droid.makeToast(title)
-        #droid.ttsSpeak(title)
-        #summary = 'renamed: %d, simulated: %d, skipped existing: %d, skipped defective: %d' % (renamed_count, simulated_count, skipped_count, skipped_defective_count)
         droid.dialogCreateAlert(title, summary)
         droid.dialogSetPositiveButtonText('OK')
         droid.dialogShow()
@@ -200,7 +197,7 @@ def get_alldata(messages):
             #the old "get_manufacturer(messages)"
             if f.name == 'manufacturer':
                 if f.value == None or isinstance(f.value,int):
-                    Iprint('manufacteur was None')
+                    #Iprint('manufacteur was None')
                     my_manufacturer = DEFAULT_MANUFACTURER
                 else:
                     my_manufacturer = f.value
