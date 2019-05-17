@@ -63,18 +63,18 @@ else:
     
 
 def main():
-    global verbosity, simulation
+    global verbosity, also_unknown
     starttime = time.time()
     parser = argparse.ArgumentParser(description='The fitfilerenamer tool',epilog = '%(prog)s {version}'.format(version=__version__))
     parser.add_argument('-v', '--verbosity', type = int, choices = range(0,3), default=1, help='0= silent, 1= a bit output, 2= many output')
     parser.add_argument('fit_files_or_folder',nargs="*",  help='w/o default Dir is used')
     parser.add_argument('-i', '--ignore_crc', action = 'store_false', help='no crc check')
-    parser.add_argument('-u', '--ignore_unknown', action = 'store_false', help='ignoring fields which starts with unknown')
+    parser.add_argument('-u', '--also_unknown', action = 'store_false', help='write also fields which starts with unknown')
     arguments = vars(parser.parse_args())
     args = arguments['fit_files_or_folder']
     verbosity = arguments['verbosity']
     ignore_crc = arguments['ignore_crc']
-    ignore_unknown = arguments['ignore_unknown']
+    also_unknown = arguments['also_unknown']
 
     #    (optionen, args) = parser.parse_args()
     #Iprint('Argumentlength %s' % (len(args)))
@@ -129,6 +129,7 @@ def main():
         Dprint('creating progressbar')
 
     Iprint('please be patient, i am parsing. This can take a minute')
+
     file_count = skipped_count = analyzed_count = simulated_count = skipped_defective_count = 0
     for file in filelist:
         Dprint('processing %s' % (file))
@@ -174,11 +175,11 @@ def main():
 
 def Dprint(text2print):
     if verbosity == 2:
-        print(text2print)
+        print(u"" + text2print)
 
 def Iprint(text2print):
     if verbosity != 0:
-        print(text2print)
+        print(u"" + text2print)
 
 
 def get_alldata(messages):
@@ -229,7 +230,7 @@ def final_message(msg):
 
 #(fitfile, file, file_count)
 def analyze_fitfile(fitfile, original_filename = None, counter=0):
-    global simulation
+    global also_unknown
 
     messages = fitfile.messages
 
@@ -244,14 +245,24 @@ def analyze_fitfile(fitfile, original_filename = None, counter=0):
      #for record in fitfile.get_messages():
     for record in messages:
         Dprint(record.name)
-        if(not record.name.startswith('unknown')):
+        if (not also_unknown):  #records, write also unknown names
+            #Iprint('writing also unkown record names')
             log_file.write(u'' + record.name + '\n')
-        if record.type == 'data':
-                for field_data in record:
+        else: #still records, but dont write unkown names
+            #Iprint('writing NOT unkown record names')
+            if(not record.name.startswith('unknown')):
+                log_file.write(u'' + record.name + '\n')
+        if record.type == 'data':  #data
+            for field_data in record:
+                if (not also_unknown):  #data, write also unknown names
+                    #Iprint('writing also unkown data names')
+                    log_file.write(u' * %s: %s\n' % (field_data.name, field_data.value))
                     Dprint(' * %s: %s' % (field_data.name, field_data.value))
+                else: #still data, dont write unknown
+                    #Iprint('writing not unkown data names')
                     if(not field_data.name.startswith('unknown')):
                         log_file.write(u' * %s: %s\n' % (field_data.name, field_data.value))
-                        a=1
+                        Dprint(' * %s: %s' % (field_data.name, field_data.value))
 
     Dprint('orignal filename: %s' % original_filename)
     Dprint('log filename: %s' % log_filename)
@@ -260,10 +271,10 @@ def analyze_fitfile(fitfile, original_filename = None, counter=0):
     Dprint('event_type: %s' % event_type)
     Dprint('climb: %s' % climb)
     Dprint('enhanced_altitude %s' % (climb))
-    Dprint('analyzing done')
+    Dprint('writing logfile done to: %s' % (log_filename))
 
     log_file.flush()
-    log_file.write(u'analyzing done for %s' % log_filename)	
+    log_file.write(u'writing logfile done to: %s' % (log_filename))
     log_file.close()
 
     Dprint ('-------------------')

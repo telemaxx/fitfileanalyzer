@@ -30,7 +30,7 @@ Note: This tool using the fitparse modul, powerfull but slow. So please be patie
 * getting help and display version: `C:\thefolderwhereyousavethefile\fitfileanalyzer.py -h`
 * setting verbosity `C:\thefolderwhereyousavethefile\fitfileanalyzer.py -v[0-2]`
 * ignoring wrong crc `C:\thefolderwhereyousavethefile\fitfileanalyzer.py -i`
-* ignoring unknown field `C:\thefolderwhereyousavethefile\fitfileanalyzer.py -u`
+* logging also unknown field- and data names `C:\thefolderwhereyousavethefile\fitfileanalyzer.py -u`
 
 ### HOWTO install fitparse
 the normal way is now working (the old way below)
